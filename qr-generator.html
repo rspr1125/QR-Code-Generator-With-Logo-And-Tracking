@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure QR Code Generator - Pradeepraj</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="color"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #FF6B35;
+        }
+
+        input[type="color"] {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .generate-btn {
+            background: #FF6B35;
+            color: white;
+        }
+
+        .generate-btn:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+        }
+
+        .download-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .qr-preview {
+            margin-top: 30px;
+            text-align: center;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .qr-preview.active {
+            display: block;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #qrcode canvas {
+            border-radius: 8px;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .tracking-url {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Secure QR Code Generator</h1>
+        <p class="subtitle">Create trackable QR codes with your branding</p>
+
+        <div class="info-box">
+            <strong>Security Features:</strong>
+            • URL tracking with unique IDs • Analytics ready • Error correction Level H (30%)
+        </div>
+
+        <div class="input-group">
+            <label for="url">Your Webpage URL *</label>
+            <input type="url" id="url" placeholder="https://www.price-watch.ai/book-a-demo/" value="https://www.price-watch.ai/book-a-demo/" required>
+        </div>
+
+        <div class="input-group">
+            <label for="brandColor">Brand Color (Default: Yellow)</label>
+            <input type="color" id="brandColor" value="#FFBC00">
+        </div>
+
+        <div class="input-group">
+            <label for="logo">Upload Logo (Center) - Optional</label>
+            <input type="file" id="logo" accept="image/*">
+        </div>
+
+        <div class="input-group">
+            <label for="errorCorrection">Error Correction Level</label>
+            <select id="errorCorrection">
+                <option value="L">Low (7%)</option>
+                <option value="M">Medium (15%)</option>
+                <option value="Q">Quartile (25%)</option>
+                <option value="H" selected>High (30%) - Recommended with logo</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="size">QR Code Size (pixels)</label>
+            <select id="size">
+                <option value="256">256x256 - Small</option>
+                <option value="512" selected>512x512 - Medium</option>
+                <option value="1024">1024x1024 - Large</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button class="generate-btn" onclick="generateQR()">Generate QR Code</button>
+            <button class="download-btn" id="downloadBtn" onclick="downloadQR()" disabled>Download QR Code</button>
+        </div>
+
+        <div class="qr-preview" id="qrPreview">
+            <div id="qrcode"></div>
+            <div class="tracking-url" id="trackingUrl"></div>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="qrId">-</div>
+                    <div class="stat-label">Tracking ID</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="qrScans">0</div>
+                    <div class="stat-label">Total Scans</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="qrCreated">-</div>
+                    <div class="stat-label">Created</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let qrcodeInstance = null;
+        let logoImage = null;
+        let currentCanvas = null;
+
+        // Generate unique tracking ID
+        function generateTrackingId() {
+            return 'QR-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Handle logo upload
+        document.getElementById('logo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        logoImage = img;
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function generateQR() {
+            const url = document.getElementById('url').value;
+            const brandColor = document.getElementById('brandColor').value;
+            const errorCorrection = document.getElementById('errorCorrection').value;
+            const size = parseInt(document.getElementById('size').value);
+
+            if (!url) {
+                alert('Please enter a valid URL');
+                return;
+            }
+
+            // Validate URL
+            try {
+                new URL(url);
+            } catch {
+                alert('Please enter a valid URL starting with http:// or https://');
+                return;
+            }
+
+            // Generate tracking ID
+            const trackingId = generateTrackingId();
+            
+            // Create tracking URL (in production, this would be your tracking server)
+            const trackingUrl = `${url}${url.includes('?') ? '&' : '?'}qr_id=${trackingId}`;
+
+            // Clear previous QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            // Generate QR code
+            qrcodeInstance = new QRCode(qrContainer, {
+                text: trackingUrl,
+                width: size,
+                height: size,
+                colorDark: brandColor,
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel[errorCorrection]
+            });
+
+            // Wait for QR code to render
+            setTimeout(() => {
+                const canvas = qrContainer.querySelector('canvas');
+                if (canvas && logoImage) {
+                    addLogoToQR(canvas, logoImage, size);
+                }
+                currentCanvas = canvas;
+
+                // Update UI
+                document.getElementById('qrPreview').classList.add('active');
+                document.getElementById('downloadBtn').disabled = false;
+                document.getElementById('trackingUrl').textContent = `Tracking URL: ${trackingUrl}`;
+                document.getElementById('qrId').textContent = trackingId;
+                document.getElementById('qrScans').textContent = '0';
+                document.getElementById('qrCreated').textContent = new Date().toLocaleDateString();
+
+                // Save to localStorage for tracking (in production, save to backend)
+                saveQRData(trackingId, url, trackingUrl);
+            }, 100);
+        }
+
+        function addLogoToQR(canvas, logo, size) {
+            const ctx = canvas.getContext('2d');
+            const logoSize = size * 0.2; // Logo takes 20% of QR code size
+            const x = (size - logoSize) / 2;
+            const y = (size - logoSize) / 2;
+
+            // Draw white background for logo
+            ctx.fillStyle = 'white';
+            ctx.fillRect(x - 5, y - 5, logoSize + 10, logoSize + 10);
+
+            // Draw logo
+            ctx.drawImage(logo, x, y, logoSize, logoSize);
+
+            // Add border around logo
+            ctx.strokeStyle = '#FFBC00';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x - 5, y - 5, logoSize + 10, logoSize + 10);
+        }
+
+        function downloadQR() {
+            if (!currentCanvas) {
+                alert('Please generate a QR code first');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.download = `secure-qr-${Date.now()}.png`;
+            link.href = currentCanvas.toDataURL();
+            link.click();
+        }
+
+        function saveQRData(trackingId, originalUrl, trackingUrl) {
+            const qrData = {
+                id: trackingId,
+                originalUrl: originalUrl,
+                trackingUrl: trackingUrl,
+                created: new Date().toISOString(),
+                scans: 0
+            };
+
+            // Save to localStorage (in production, send to backend API)
+            const existingData = JSON.parse(localStorage.getItem('qrCodes') || '[]');
+            existingData.push(qrData);
+            localStorage.setItem('qrCodes', JSON.stringify(existingData));
+
+            console.log('QR Code saved:', qrData);
+            console.log('To implement tracking, send this data to your backend API');
+        }
+
+        // Initialize with yellow brand color
+        window.addEventListener('load', () => {
+            document.getElementById('brandColor').value = '#FFBC00';
+        });
+    </script>
+</body>
+</html>
