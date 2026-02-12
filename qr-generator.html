@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure QR Code Generator - Pradeepraj</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <title>Secure QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -312,7 +312,7 @@
             const size = parseInt(document.getElementById('size').value);
 
             if (!url) {
-                alert('Please enter a valid URL');
+                alert('Please enter a URL');
                 return;
             }
 
@@ -327,42 +327,47 @@
             // Generate tracking ID
             const trackingId = generateTrackingId();
             
-            // Create tracking URL (in production, this would be your tracking server)
+            // Create tracking URL
             const trackingUrl = `${url}${url.includes('?') ? '&' : '?'}qr_id=${trackingId}`;
 
             // Clear previous QR code
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
 
-            // Generate QR code
-            qrcodeInstance = new QRCode(qrContainer, {
-                text: trackingUrl,
-                width: size,
-                height: size,
-                colorDark: brandColor,
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel[errorCorrection]
+            // Create canvas for QR code
+            const canvas = document.createElement('canvas');
+            qrContainer.appendChild(canvas);
+
+            // Generate QR code with QRious library
+            const errorLevels = { L: 'L', M: 'M', Q: 'Q', H: 'H' };
+            const qr = new QRious({
+                element: canvas,
+                value: trackingUrl,
+                size: size,
+                foreground: brandColor,  // Use brand color for the QR pattern
+                background: '#ffffff',   // White background
+                level: errorLevels[errorCorrection]
             });
 
-            // Wait for QR code to render
-            setTimeout(() => {
-                const canvas = qrContainer.querySelector('canvas');
-                if (canvas && logoImage) {
+            currentCanvas = canvas;
+
+            // Add logo if uploaded
+            if (logoImage) {
+                setTimeout(() => {
                     addLogoToQR(canvas, logoImage, size);
-                }
-                currentCanvas = canvas;
+                }, 100);
+            }
 
-                // Update UI
-                document.getElementById('qrPreview').classList.add('active');
-                document.getElementById('downloadBtn').disabled = false;
-                document.getElementById('trackingUrl').textContent = `Tracking URL: ${trackingUrl}`;
-                document.getElementById('qrId').textContent = trackingId;
-                document.getElementById('qrScans').textContent = '0';
-                document.getElementById('qrCreated').textContent = new Date().toLocaleDateString();
+            // Update UI
+            document.getElementById('qrPreview').classList.add('active');
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('trackingUrl').textContent = `Tracking URL: ${trackingUrl}`;
+            document.getElementById('qrId').textContent = trackingId;
+            document.getElementById('qrScans').textContent = '0';
+            document.getElementById('qrCreated').textContent = new Date().toLocaleDateString();
 
-                // Save to localStorage for tracking (in production, save to backend)
-                saveQRData(trackingId, url, trackingUrl);
-            }, 100);
+            // Save to localStorage for tracking
+            saveQRData(trackingId, url, trackingUrl);
         }
 
         function addLogoToQR(canvas, logo, size) {
